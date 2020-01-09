@@ -2,15 +2,15 @@ package io.xooxo.binance.messages
 
 
 data class DepthEventData(
-    private val e: String, // Event type
-    private val E: Long, // Event time
-    private val T: Long, // time
-    private val s: String, // symbol
+    val e: String, // Event type
+    val E: Long, // Event time
+    val T: Long, // time
+    val s: String, // symbol
+    val b: Array<Array<String>>,
+    val a: Array<Array<String>>,
     private val U: Long, // first update Id from last stream
     private val u: Long, // last update Id from last stream
-    private val pu: Long, // last update Id in last stream（ie ‘u’ in last stream）
-    private val b: Array<Array<String>>,
-    private val a: Array<Array<String>>
+    private val pu: Long // last update Id in last stream（ie ‘u’ in last stream）
 
 ) {
 

@@ -5,60 +5,61 @@ import io.xooxo.binance.impl.BinanceClientImpl
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 class BinanceClientTest {
 
     companion object {
-        private const val TWO_SECONDS = 2000L
-        private const val ONE_SECOND = 1000L
-        private const val RETRIES = 60
+        private const val RETRIES = 600
+        private const val SLEEP_INTERVAL = 600L
     }
 
-    private val client: BinanceClient = BinanceClientImpl(BinanceClient.Type.FUTURES)
+    private fun waitUntil(event: () -> Boolean): Boolean {
+        for (i in 1..RETRIES) {
+            if (event()) {
+                return true
+            }
+            Thread.sleep(SLEEP_INTERVAL)
+        }
+        return false
+    }
 
-    @Test
-    fun connectionTest() {
+    @ParameterizedTest
+    @EnumSource(value = BinanceClient.Type::class, names = ["SPOT", "FUTURES"])
+    fun connectionTest(type: BinanceClient.Type) {
+        val client: BinanceClient = BinanceClientImpl(BinanceClient.Type.FUTURES)
         var connectCalled = false
         client.setConnectListener { connectCalled = true }
         client.connectWebSocket()
-        Thread.sleep(TWO_SECONDS)
-        assertTrue(connectCalled)
+        assertTrue(waitUntil { connectCalled })
 
         var closeCalled = false
         client.setCloseListener { closeCalled = true }
         client.close()
-        Thread.sleep(TWO_SECONDS)
-        assertTrue(closeCalled)
+        assertTrue(waitUntil { closeCalled })
     }
 
-    @Test
-    fun trades() {
+    @ParameterizedTest
+    @EnumSource(value = BinanceClient.Type::class, names = ["SPOT", "FUTURES"])
+    fun trades(type: BinanceClient.Type) {
+        val client: BinanceClient = BinanceClientImpl(BinanceClient.Type.FUTURES)
         var tradeReceived = false
         client.setAggTradeListener { tradeReceived = true }
         client.setConnectListener { client.subscribeToAggTrades("btcusdt") }
         client.connectWebSocket()
-        for (i in 1..60) {
-            if (tradeReceived) {
-                break
-            }
-            Thread.sleep(ONE_SECOND)
-        }
-        assertTrue(tradeReceived)
+        assertTrue(waitUntil { tradeReceived })
     }
 
-    @Test
-    fun orderBook() {
+    @ParameterizedTest
+    @EnumSource(value = BinanceClient.Type::class, names = ["SPOT", "FUTURES"])
+    fun orderBook(type: BinanceClient.Type) {
+        val client: BinanceClient = BinanceClientImpl(BinanceClient.Type.FUTURES)
         var depthReceived = false
         client.setDepthListener { depthReceived = true }
         client.setConnectListener { client.subscribeToDepth("btcusdt") }
         client.connectWebSocket()
-        for (i in 1..RETRIES) {
-            if (depthReceived) {
-                break
-            }
-            Thread.sleep(ONE_SECOND)
-        }
-        assertTrue(depthReceived)
+        assertTrue(waitUntil { depthReceived })
     }
 }
 

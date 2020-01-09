@@ -105,7 +105,7 @@ class BinanceClientImpl(private val type: BinanceClient.Type) : BinanceClient {
     }
 
     override fun subscribeToAggTrades(symbol: String) {
-        webSocket!!.send(WsMessage(getSubscriptionMessage(symbol, "aggTrade")))
+        webSocket!!.send(WsMessage(getSubscriptionMessage(symbol.toLowerCase(), "aggTrade")))
     }
 
     override fun setAggTradeListener(aggTradeListener: AggTradeListener) {
@@ -128,7 +128,7 @@ class BinanceClientImpl(private val type: BinanceClient.Type) : BinanceClient {
 
 
     override fun subscribeToDepth(symbol: String) {
-        webSocket!!.send(WsMessage(getSubscriptionMessage(symbol, "depth")))
+        webSocket!!.send(WsMessage(getSubscriptionMessage(symbol.toLowerCase(), "depth")))
     }
 
     private fun onMessage(message: WsMessage) {
